@@ -54,7 +54,7 @@ export default function Home() {
               {selectedType === "donor" && <Appointments />}
             </TabsContent>
             <TabsContent value="blood-stock" className="space-y-4">
-              <BloodStock />
+              <BloodStock selectedType={selectedType} />
             </TabsContent>
           </Tabs>
         </div>

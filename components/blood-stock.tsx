@@ -36,7 +36,7 @@ type BloodStock = {
 }
 
 
-export function BloodStock() {
+export function BloodStock({ selectedType }: { selectedType?: "donor" | "patient" }) {
   const { data: states, loading: loadingStates, error: errorStates } = useAllStates();
   // Form schema
   const formSchema = z.object({
@@ -266,10 +266,21 @@ export function BloodStock() {
               )}
             />
           </div>
-          <div className="max-w-fit mx-auto">
-          <Button type="submit" className="mt-4 bg-red-600 hover:bg-red-700 text-white" disabled={loadingStock}>
-            {loadingStock ? (<><Loader2 className="animate-spin" /><span className="animate-pulse">Searching...</span></>) : "Search Blood Stock"}
-          </Button>
+          <div className="w-full mx-auto flex justify-between items-center gap-4">
+            <Button type="submit" className="mt-4 bg-red-600 hover:bg-red-700 text-white" disabled={loadingStock}>
+              {loadingStock ? (<><Loader2 className="animate-spin" /><span className="animate-pulse">Searching...</span></>) : "Search Blood Stock"}
+            </Button>
+            
+            {selectedType === "patient" && (
+              <a
+                href="https://eraktkosh.mohfw.gov.in/BLDAHIMS/bloodbank/portalThalassemiaLogin.cnt?hmode=DETAILS"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-2 text-red-700 underline text-sm hover:text-red-900 mt-4"
+              >
+                Can't find any donor? Request Blood
+              </a>
+            )}
           </div>
         </form>
       </Form>
