@@ -27,18 +27,18 @@ export default function Home() {
         <div className="mx-auto w-full max-w-7xl">
           <DashboardStats />
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-2 md:grid-cols-3 bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
-              <TabsTrigger value={selectedType === "donor" ? "donor-registration" : "patient-management"} className="rounded-md flex items-center gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white">
+            <TabsList className="flex flex-row w-fit mx-auto rounded-lg p-1 shadow-sm">
+              <TabsTrigger value={selectedType === "donor" ? "donor-registration" : "patient-management"} className="rounded-md flex items-center gap-2">
                 {selectedType === "donor" ? <UserPlus2 className="h-4 w-4" /> : <User2 className="h-4 w-4" />}
-                <span className="hidden sm:inline">{selectedType === "donor" ? "Donor Registration" : "Patient Management"}</span>
+                <span className="hidden sm:inline">{selectedType === "donor" ? "Donor Registration" : "Thalassemia Patients Registration"}</span>
               </TabsTrigger>
               {selectedType === "donor" && (
-                <TabsTrigger value="camp-schedule" className="rounded-md flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <TabsTrigger value="camp-schedule" className="rounded-md flex items-center gap-2 data-[state=active]:text-blue-600">
                   <CalendarIcon className="h-4 w-4" />
                   <span className="hidden sm:inline">Camp Schedule</span>
                 </TabsTrigger>
               )}
-              <TabsTrigger value="blood-stock" className="rounded-md flex items-center gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white">
+              <TabsTrigger value="blood-stock" className="rounded-md flex items-center gap-2 data-[state=active]:text-red-600">
                 <Droplets className="h-4 w-4" />
                 <span className="hidden sm:inline">Blood Stock</span>
               </TabsTrigger>

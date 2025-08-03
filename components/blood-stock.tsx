@@ -9,7 +9,7 @@ import { useAllStates } from "@/hooks/useAllStates"
 import { useDistricts } from "@/hooks/useDistricts"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-import { Droplets, AlertTriangle, CheckCircle, TrendingUp, TrendingDown } from "lucide-react"
+import { Droplets, AlertTriangle, CheckCircle, TrendingUp, TrendingDown, Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -48,14 +48,34 @@ export function BloodStock() {
 
   type FormValues = z.infer<typeof formSchema>;
 
+  // Get default values from localStorage if available
+  let localDefaults = {
+    state: "",
+    district: "",
+    bloodGroup: "all",
+    bloodComponent: "11",
+  };
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem("thalassemia_patients");
+    if (stored) {
+      try {
+        const arr = JSON.parse(stored);
+        if (Array.isArray(arr) && arr.length > 0) {
+          const patient = arr[0];
+          localDefaults = {
+            state: patient.state || "",
+            district: patient.district || "",
+            bloodGroup: patient.bloodGroup || "all",
+            bloodComponent: patient.bloodComponent || "11",
+          };
+        }
+      } catch {}
+    }
+  }
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      state: "",
-      district: "",
-      bloodGroup: "all",
-      bloodComponent: "11",
-    },
+    defaultValues: localDefaults,
   });
 
   const [bloodStock, setBloodStock] = useState<any[]>([]);
@@ -246,9 +266,11 @@ export function BloodStock() {
               )}
             />
           </div>
+          <div className="max-w-fit mx-auto">
           <Button type="submit" className="mt-4 bg-red-600 hover:bg-red-700 text-white" disabled={loadingStock}>
-            {loadingStock ? "Searching..." : "Search Blood Stock"}
+            {loadingStock ? (<><Loader2 className="animate-spin" /><span className="animate-pulse">Searching...</span></>) : "Search Blood Stock"}
           </Button>
+          </div>
         </form>
       </Form>
      
@@ -278,9 +300,10 @@ export function BloodStock() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-16">S/N</TableHead>
-                        <TableHead>Address</TableHead>
+                        <TableHead className="w-56 align-middle whitespace-nowrap p-1 text-sm">Blood Bank</TableHead>
+                        <TableHead className="w-32 text-center align-middle whitespace-nowrap p-1">Status</TableHead>
+                        <TableHead>Contact</TableHead>
                         <TableHead>Type</TableHead>
-                        <TableHead>Status</TableHead>
                         <TableHead>Last Updated</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -288,20 +311,65 @@ export function BloodStock() {
                       {bloodStock.map((stock: any[], idx: number) => {
                         // Use the 'Type' column (stock[2]) to determine if it's a government bank
                         const typeValue = (stock[2] || "").toLowerCase().trim();
-                        // Match 'govt.' (with dot, case-insensitive, possible whitespace)
                         const isGovt = /^govt\.?$/i.test(stock[2]?.trim());
-                        
+
+                        // Extract contact info from address
+                        const addressStr = stock[1] || "";
+                        // Regex to extract Phone, Fax, Email
+                        const contactRegex = /Phone:\s*([^,]*)\s*,Fax:\s*([^,]*)\s*,\s*Email:\s*([^<]*)/i;
+                        const contactMatch = addressStr.match(contactRegex);
+                        let contactInfo;
+                        if (contactMatch) {
+                          const phone = contactMatch[1]?.trim() || "-";
+                          const fax = contactMatch[2]?.trim() || "-";
+                          const email = contactMatch[3]?.trim() || "-";
+                          contactInfo = (
+                            <div className="flex flex-col text-xs text-gray-700">
+                              <span><b>Phone:</b> {phone}</span>
+                              <span><b>Fax:</b> {fax}</span>
+                              <span><b>Email:</b> {email}</span>
+                            </div>
+                          );
+                        } else {
+                          contactInfo = (
+                            <div className="flex flex-col text-xs text-gray-700">
+                              <span><b>Phone:</b> -</span>
+                              <span><b>Fax:</b> -</span>
+                              <span><b>Email:</b> -</span>
+                            </div>
+                          );
+                        }
+                        // Remove contact info from address
+                        const addressClean = addressStr.replace(contactRegex, "").replace(/<br\s*\/?>(?!$)/gi, "<br>").replace(/\s*$/, "");
+
+                        // Optimized status logic using <p> tag class
+                        let statusHtml = stock[3] || "";
+                        let statusText = "";
+                        let statusClass = "";
+                        // Extract class name from <p>
+                        const classMatch = statusHtml.match(/<p[^>]*class=['\"]([^'\"]+)['\"]/i);
+                        const statusClassName = classMatch ? classMatch[1] : "";
+                        statusText = statusHtml.replace(/<[^>]+>/g, "").trim();
+                        if (statusClassName === "text-success") {
+                          statusClass = "text-green-600 font-bold";
+                        } else if (statusClassName === "text-danger") {
+                          statusClass = "text-red-600 font-bold";
+                        } else {
+                          statusClass = "text-gray-600";
+                        }
+
                         return (
                           <TableRow key={stock[0]} className={isGovt ? "bg-blue-200" : "bg-white"}>
                             <TableCell className="font-semibold text-gray-900">{idx + 1}</TableCell>
-                            <TableCell>
-                              <span className="text-sm text-gray-600 font-semibold" dangerouslySetInnerHTML={{ __html: (stock[1] || "").replace(/<br\s*\/?>(?!$)/gi, "<br>") }} />
+                            <TableCell className="w-56 align-middle whitespace-nowrap p-1 text-sm">
+                              <span className="text-gray-600 font-semibold" dangerouslySetInnerHTML={{ __html: addressClean }} />
                             </TableCell>
+                            <TableCell className="w-32 text-center align-middle whitespace-nowrap p-1">
+                              <span className={statusClass + ' text-sm'}>{statusText}</span>
+                            </TableCell>
+                            <TableCell>{contactInfo}</TableCell>
                             <TableCell>
                               <span className="font-semibold text-gray-900">{stock[2]}</span>
-                            </TableCell>
-                            <TableCell>
-                              <span className="font-semibold text-gray-900" dangerouslySetInnerHTML={{ __html: stock[3] }} />
                             </TableCell>
                             <TableCell>
                               <span className="font-semibold text-gray-900">{stock[4]}</span>
