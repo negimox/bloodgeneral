@@ -52,7 +52,7 @@ export function BloodStock() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       state: "",
-      district: "-1", // Default to All Districts
+      district: "",
       bloodGroup: "all",
       bloodComponent: "11",
     },
@@ -172,7 +172,6 @@ export function BloodStock() {
                         <SelectValue placeholder="Select district" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="-1">All Districts</SelectItem>
                         {Array.isArray(districts?.records) && districts.records.map((district: any) => (
                           <SelectItem key={district.value} value={district.value}>{district.id}</SelectItem>
                         ))}

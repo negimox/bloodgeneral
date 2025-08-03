@@ -51,13 +51,21 @@ export function PatientManagement() {
     },
   ])
 
-  const [newPatient, setNewPatient] = useState({
+  const [newPatient, setNewPatient] = useState<{
+    name: string
+    age: string
+    bloodType: string
+    phone: string
+    email: string
+    severity: "mild" | "moderate" | "severe"
+    medicalNotes: string
+  }>({
     name: "",
     age: "",
     bloodType: "",
     phone: "",
     email: "",
-    severity: "mild" as const,
+    severity: "mild",
     medicalNotes: "",
   })
 
