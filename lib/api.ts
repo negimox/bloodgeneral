@@ -1,10 +1,38 @@
+// Helper to Unicode-escape a string
+function unicodeEscape(str: string): string {
+  return str.split('').map(char => {
+    const code = char.charCodeAt(0).toString(16).padStart(4, '0');
+    return `\\u${code}`;
+  }).join('');
+}
+
+// Generate abfhttf dynamically
+function generateAbfhttf({ stateCode, districtCode, campDate }: { stateCode: string, districtCode: string, campDate: string }) {
+  const arr = [
+    { name: "stateCode", value: stateCode },
+    { name: "districtCode", value: districtCode },
+    { name: "campDate", value: campDate }
+  ];
+  const jsonStr = JSON.stringify(arr);
+  // Step 1: Base64 encode the JSON string
+  const base64Str = typeof window === 'undefined'
+    ? Buffer.from(jsonStr).toString('base64')
+    : btoa(jsonStr);
+  // Step 2: Unicode-escape each character of the base64 string
+  const unicodeStr = base64Str.split('').map(char => {
+    const code = char.charCodeAt(0).toString(16).padStart(4, '0');
+    return `\\u${code}`;
+  }).join('');
+  // Step 3: URL-encode the result
+  return encodeURIComponent(unicodeStr);
+}
+
 // Fetch nearby camps
 export async function fetchNearbyCamps({ stateCode, districtCode, campDate }: { stateCode: string, districtCode: string, campDate: string }) {
-  // abfhttf param is required and static for now
-  const abfhttf = "\u0057\u0033\u0073\u0069\u0062\u006d\u0046\u0074\u005a\u0053\u0049\u0036\u0049\u006e\u004e\u0030\u0059\u0058\u0052\u006c\u0051\u0032\u0039\u006b\u005a\u0053\u0049\u0073\u0049\u006e\u005a\u0068\u0062\u0048\u0056\u006c\u0049\u006a\u006f\u0069\u004f\u0054\u0055\u0069\u0066\u0053\u0078\u0037\u0049\u006d\u0035\u0068\u0062\u0057\u0055\u0069\u004f\u0069\u004a\u006b\u0061\u0058\u004e\u0030\u0063\u006d\u006c\u006a\u0064\u0045\u004e\u0076\u005a\u0047\u0055\u0069\u004c\u0043\u004a\u0032\u0059\u0057\u0078\u0031\u005a\u0053\u0049\u0036\u0049\u0069\u0030\u0078\u0049\u006e\u0030\u0073\u0065\u0079\u004a\u0075\u0059\u0057\u0031\u006c\u0049\u006a\u006f\u0069\u0059\u0032\u0046\u0074\u0063\u0045\u0052\u0068\u0064\u0047\u0055\u0069\u004c\u0043\u004a\u0032\u0059\u0057\u0078\u0031\u005a\u0053\u0049\u0036\u0049\u006a\u0049\u0077\u004d\u006a\u0055\u0074\u004d\u0044\u0067\u0074\u004d\u0044\u004d\u0069\u0066\u0056\u0030\u003d"
-  const url = `https://eraktkosh.mohfw.gov.in/BLDAHIMS/bloodbank/nearbyBB.cnt?hmode=GETNEARBYCAMPS&stateCode=${stateCode}&districtCode=${districtCode}&campDate=${campDate}&abfhttf=${abfhttf}`
-  const response = await axios.get(url)
-  return response.data
+  const abfhttf = generateAbfhttf({ stateCode, districtCode, campDate });
+  const url = `https://eraktkosh.mohfw.gov.in/BLDAHIMS/bloodbank/nearbyBB.cnt?hmode=GETNEARBYCAMPS&stateCode=${stateCode}&districtCode=${districtCode}&campDate=${campDate}&abfhttf=${abfhttf}`;
+  const response = await axios.get(url);
+  return response.data;
 }
 // lib/api.ts
 import axios, { AxiosRequestConfig } from "axios";

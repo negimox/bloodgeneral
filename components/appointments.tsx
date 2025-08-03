@@ -33,7 +33,7 @@ export function Appointments() {
   // Camp search form state
   const [searchForm, setSearchForm] = useState({
     state: "",
-    district: "-1", // Default to All Districts
+    district: "-1",
     date: new Date(),
   })
   // Popover open state for date picker
@@ -211,7 +211,7 @@ export function Appointments() {
                 disabled={!districts || !Array.isArray(districts.records) || loadingDistricts || !!errorDistricts}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Districts" />
+                  <SelectValue placeholder="Select district" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="-1">All Districts</SelectItem>
@@ -271,18 +271,49 @@ export function Appointments() {
                       <th className="px-4 py-2 text-left">Address</th>
                       <th className="px-4 py-2 text-left">Date</th>
                       <th className="px-4 py-2 text-left">Contact</th>
+                      <th className="px-4 py-2 text-left">Conducted By</th>
+                      <th className="px-4 py-2 text-left">Organized By</th>
+                      <th className="px-4 py-2 text-left">Register Link</th>
+                      <th className="px-4 py-2 text-left">Timing</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {searchResults.map((camp: any, idx: number) => (
-                      <tr key={camp[0] || idx} className="border-b">
-                        <td className="px-4 py-2 font-semibold">{idx + 1}</td>
-                        <td className="px-4 py-2">{camp[1]}</td>
-                        <td className="px-4 py-2">{camp[2]}</td>
-                        <td className="px-4 py-2">{camp[3]}</td>
-                        <td className="px-4 py-2">{camp[4]}</td>
-                      </tr>
-                    ))}
+                    {searchResults.map((camp: any, idx: number) => {
+                      // Helper to strip HTML tags from date field
+                      const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').trim();
+                      // Helper to extract href from anchor tag
+                      const extractHref = (html: string) => {
+                        const match = html.match(/href=['"]([^'"]+)['"]/);
+                        return match ? match[1] : null;
+                      };
+                      // Helper to extract link text from anchor tag
+                      const extractLinkText = (html: string) => {
+                        const match = html.match(/>([\s\S]*)<\/a>/);
+                        return match ? match[1].replace(/<br\s*\/?>(\s*)?/gi, ' ').trim() : 'Register';
+                      };
+                      const registerHref = extractHref(camp[9]);
+                      const registerText = extractLinkText(camp[9]);
+                      const fullRegisterUrl = registerHref ? `https://eraktkosh.mohfw.gov.in${registerHref}` : null;
+                      return (
+                        <tr key={camp[0] || idx} className="border-b">
+                          <td className="px-4 py-2 font-semibold">{camp[0]}</td>
+                          <td className="px-4 py-2">{camp[2]}</td>
+                          <td className="px-4 py-2">{camp[3]}</td>
+                          <td className="px-4 py-2">{stripHtml(camp[1])}</td>
+                          <td className="px-4 py-2">{camp[6]}</td>
+                          <td className="px-4 py-2">{camp[7]}</td>
+                          <td className="px-4 py-2">{camp[8]}</td>
+                          <td className="px-4 py-2">
+                            {fullRegisterUrl ? (
+                              <a href={fullRegisterUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{registerText}</a>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
+                          <td className="px-4 py-2">{camp[10]}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -290,8 +321,7 @@ export function Appointments() {
           </div>
         </CardContent>
       </Card>
-    
-     
+   
     </div>
   )
 }
