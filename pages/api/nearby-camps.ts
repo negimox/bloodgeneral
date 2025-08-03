@@ -1,11 +1,7 @@
-
 import type { NextApiRequest, NextApiResponse } from 'next';
-// Manual CORS headers for Next.js v15
 import axios from 'axios';
 
-const API_BASE_URL = process.env.API_BASE_URL || "";
-
-
+// Manual CORS headers for Next.js v15
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
@@ -15,15 +11,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
-  const { state, district, bloodGroup, bloodComponent } = req.query;
-  if (!state || !district || !bloodGroup || !bloodComponent) {
+  const { stateCode = '', districtCode = '', campDate = '', abfhttf = '' } = req.query;
+  if (!stateCode || !districtCode || !campDate || !abfhttf) {
     return res.status(400).json({ error: 'Missing required query params' });
   }
   try {
-    const url = `${API_BASE_URL}/BLDAHIMS/bloodbank/nearbyBB.cnt?hmode=GETNEARBYSTOCKDETAILS&stateCode=${state}&districtCode=${district}&bloodGroup=${bloodGroup}&bloodComponent=${bloodComponent}&lang=0&abfhttf=%5Cu0057%5Cu0031%5Cu0030%5Cu003d`;
+    const url = `https://eraktkosh.mohfw.gov.in/BLDAHIMS/bloodbank/nearbyBB.cnt?hmode=GETNEARBYCAMPS&stateCode=${stateCode}&districtCode=${districtCode}&campDate=${campDate}&abfhttf=${abfhttf}`;
     const response = await axios.get(url);
     res.status(200).json(response.data);
   } catch (error: any) {
-    res.status(error?.response?.status || 500).json({ error: error?.message || 'Failed to fetch blood stock' });
+    res.status(error?.response?.status || 500).json({ error: error?.message || 'Failed to fetch nearby camps' });
   }
 }

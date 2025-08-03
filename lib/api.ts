@@ -30,8 +30,7 @@ function generateAbfhttf({ stateCode, districtCode, campDate }: { stateCode: str
 // Fetch nearby camps
 export async function fetchNearbyCamps({ stateCode, districtCode, campDate }: { stateCode: string, districtCode: string, campDate: string }) {
   const abfhttf = generateAbfhttf({ stateCode, districtCode, campDate });
-  const url = `https://eraktkosh.mohfw.gov.in/BLDAHIMS/bloodbank/nearbyBB.cnt?hmode=GETNEARBYCAMPS&stateCode=${stateCode}&districtCode=${districtCode}&campDate=${campDate}&abfhttf=${abfhttf}`;
-  const response = await axios.get(url);
+  const response = await axios.get(`/api/nearby-camps?stateCode=${stateCode}&districtCode=${districtCode}&campDate=${campDate}&abfhttf=${abfhttf}`);
   return response.data;
 }
 // lib/api.ts
@@ -59,31 +58,22 @@ async function requestHandler(config: AxiosRequestConfig) {
 }
 
 export async function fetchOverallStats() {
-  return requestHandler({
-    url: "/eRaktkoshUtilities/eraktkosh/overAllStats",
-    method: "POST",
-    data: { stateCode: 0 },
-  });
+  const response = await axios.post('/api/overall-stats', { stateCode: 0 });
+  return response.data;
 }
 
 export async function fetchAllStates() {
-  return requestHandler({
-    url: "/eRaktkoshUtilities/eraktkosh/getallstates",
-    method: "POST",
-    data: {},
-  });
+  const response = await axios.post('/api/all-states', {});
+  return response.data;
 }
 
 export async function fetchBloodCollectionStats(stateCode: number, month: number, year: number) {
-  return requestHandler({
-    url: "/eRaktkoshUtilities/eraktkosh/bloodCollectionStats",
-    method: "POST",
-    data: {
-      stateCode,
-      gdtMonth: month,
-      gdtYear: year,
-    },
+  const response = await axios.post('/api/blood-collection-stats', {
+    stateCode,
+    gdtMonth: month,
+    gdtYear: year,
   });
+  return response.data;
 }
 
 export async function fetchDistricts(stateCode: number) {
