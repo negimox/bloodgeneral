@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DonorRegistration } from "@/components/donor-registration"
+import { HostCampForm } from "@/components/host-camp-form"
 import { PatientManagement } from "@/components/patient-management"
 import { BloodStock } from "@/components/blood-stock"
 import { Appointments } from "@/components/appointments"
@@ -33,11 +34,18 @@ export default function Home() {
                 <span className="hidden sm:inline">{selectedType === "donor" ? "Donor Registration" : "Thalassemia Patients Registration"}</span>
               </TabsTrigger>
               {selectedType === "donor" && (
+                <TabsTrigger value="host-camp" className="rounded-md flex items-center gap-2 data-[state=active]:text-green-600">
+                  <CalendarIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">Host a Camp</span>
+                </TabsTrigger>
+              )}
+              {selectedType === "donor" && (
                 <TabsTrigger value="camp-schedule" className="rounded-md flex items-center gap-2 data-[state=active]:text-blue-600">
                   <CalendarIcon className="h-4 w-4" />
                   <span className="hidden sm:inline">Camp Schedule</span>
                 </TabsTrigger>
               )}
+              
               <TabsTrigger value="blood-stock" className="rounded-md flex items-center gap-2 data-[state=active]:text-red-600">
                 <Droplets className="h-4 w-4" />
                 <span className="hidden sm:inline">Blood Stock</span>
@@ -52,6 +60,11 @@ export default function Home() {
             </TabsContent>
             <TabsContent value="camp-schedule" className="space-y-4">
               {selectedType === "donor" && <Appointments />}
+            </TabsContent>
+            <TabsContent value="host-camp" className="space-y-4">
+              {selectedType === "donor" && (
+                <HostCampForm />
+              )}
             </TabsContent>
             <TabsContent value="blood-stock" className="space-y-4">
               <BloodStock selectedType={selectedType} />

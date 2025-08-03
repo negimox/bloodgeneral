@@ -48,7 +48,7 @@ export function BloodStock({ selectedType }: { selectedType?: "donor" | "patient
 
   type FormValues = z.infer<typeof formSchema>;
 
-  // Get default values from localStorage if available
+  // Get default values from localStorage depending on selectedType
   let localDefaults = {
     state: "",
     district: "",
@@ -56,20 +56,35 @@ export function BloodStock({ selectedType }: { selectedType?: "donor" | "patient
     bloodComponent: "11",
   };
   if (typeof window !== "undefined") {
-    const stored = localStorage.getItem("thalassemia_patients");
-    if (stored) {
-      try {
-        const arr = JSON.parse(stored);
-        if (Array.isArray(arr) && arr.length > 0) {
-          const patient = arr[0];
+    if (selectedType === "donor") {
+      const donorRaw = localStorage.getItem("donor_information");
+      if (donorRaw) {
+        try {
+          const donor = JSON.parse(donorRaw);
           localDefaults = {
-            state: patient.state || "",
-            district: patient.district || "",
-            bloodGroup: patient.bloodGroup || "all",
-            bloodComponent: patient.bloodComponent || "11",
+            state: donor.state || "",
+            district: donor.district || "",
+            bloodGroup: donor.bloodGroup || "all",
+            bloodComponent: "11", // Always Whole Blood for donor
           };
-        }
-      } catch {}
+        } catch {}
+      }
+    } else {
+      const stored = localStorage.getItem("thalassemia_patients");
+      if (stored) {
+        try {
+          const arr = JSON.parse(stored);
+          if (Array.isArray(arr) && arr.length > 0) {
+            const patient = arr[0];
+            localDefaults = {
+              state: patient.state || "",
+              district: patient.district || "",
+              bloodGroup: patient.bloodGroup || "all",
+              bloodComponent: patient.bloodComponent || "11",
+            };
+          }
+        } catch {}
+      }
     }
   }
 

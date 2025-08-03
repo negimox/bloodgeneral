@@ -31,11 +31,25 @@ type Appointment = {
 
 export function Appointments() {
   // Camp search form state
-  const [searchForm, setSearchForm] = useState({
+  let donorDefaults = {
     state: "",
     district: "-1",
     date: new Date(),
-  })
+  };
+  if (typeof window !== "undefined") {
+    const donorInfoRaw = localStorage.getItem("donor_information");
+    if (donorInfoRaw) {
+      try {
+        const donorInfo = JSON.parse(donorInfoRaw);
+        donorDefaults = {
+          state: donorInfo.state || "",
+          district: donorInfo.district || "-1",
+          date: new Date(),
+        };
+      } catch {}
+    }
+  }
+  const [searchForm, setSearchForm] = useState(donorDefaults)
   // Popover open state for date picker
   const [datePickerOpen, setDatePickerOpen] = useState(false)
   const [searchResults, setSearchResults] = useState<any[]>([])
@@ -177,7 +191,29 @@ export function Appointments() {
                 districtCode: searchForm.district,
                 campDate: campDateStr,
               });
-              setSearchResults(Array.isArray(data?.data) ? data.data : []);
+              let camps = Array.isArray(data?.data) ? data.data : [];
+              // Check localStorage for hosted_camp_information and append if state matches
+              if (typeof window !== "undefined") {
+                const hostedCampRaw = localStorage.getItem("hosted_camp_information");
+                if (hostedCampRaw) {
+                  try {
+                    const hostedCamp = JSON.parse(hostedCampRaw);
+                    if (Array.isArray(hostedCamp) && hostedCamp.length > 1) {
+                      // hostedCamp[3] is state name, compare to selected state value
+                      // Find selected state name from states
+                      let selectedStateName = "";
+                      const stateList = Array.isArray(states?.data) ? states.data : Array.isArray(states?.states) ? states.states : Array.isArray(states) ? states : [];
+                      const selectedStateObj = stateList.find((s: any) => s.stateCode?.toString() === searchForm.state);
+                      if (selectedStateObj) selectedStateName = selectedStateObj.stateName;
+                      if (hostedCamp[4] === selectedStateName) {
+                        hostedCamp[0] = (camps.length + 1).toString();
+                        camps = [...camps, hostedCamp];
+                      }
+                    }
+                  } catch {}
+                }
+              }
+              setSearchResults(camps);
             } catch (err: any) {
               setErrorSearch(err.message || "Failed to fetch camps");
             } finally {

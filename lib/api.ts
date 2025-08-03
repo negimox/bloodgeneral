@@ -1,3 +1,9 @@
+// Fetch blood banks by state and district
+export async function fetchBloodBanks({ stateCode, districtCode }: { stateCode: string, districtCode: string }) {
+  // Call local API route to avoid CORS
+  const response = await axios.get(`/api/blood-banks?stateCode=${stateCode}&districtCode=${districtCode}`)
+  return response.data;
+}
 // Helper to Unicode-escape a string
 function unicodeEscape(str: string): string {
   return str.split('').map(char => {
